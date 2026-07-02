@@ -9,7 +9,7 @@ import { ThemeProvider } from "@/providers/ThemeProvider";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
-});
+}); 
 
 export const metadata: Metadata = {
   title: "Forge",
@@ -27,13 +27,11 @@ export default function RootLayout({
       className={`${geistSans.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-dvh bg-background text-foreground font-sans">
-        <ThemeProvider>
-          <QueryProvider>
-            <AppShell>{children}</AppShell>
-          </QueryProvider>
-        </ThemeProvider>
-      </body>
+     <body className="min-h-dvh bg-background text-foreground font-sans">
+  <QueryProvider>
+    <AppShell>{children}</AppShell>
+  </QueryProvider>
+</body>
     </html>
   );
 }
