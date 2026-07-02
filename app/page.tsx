@@ -1,7 +1,3 @@
 export default function HomePage() {
-  return (
-    <main className="flex h-screen items-center justify-center">
-      <h1 className="text-4xl font-bold">Forge</h1>
-    </main>
-  );
+  return <h1 className="text-3xl font-semibold tracking-tight">Welcome to Forge</h1>;
 }
