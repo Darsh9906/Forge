@@ -10,6 +10,15 @@ export interface SendMessageRequest {
 	use_memory?: boolean;
 }
 
+export interface ChatCompletionChoice {
+	message?: ChatMessage;
+	delta?: Partial<ChatMessage>;
+	[key: string]: unknown;
+}
+
 export interface SendMessageResponse {
+	content?: string;
+	message?: ChatMessage;
+	choices?: ChatCompletionChoice[];
 	[key: string]: unknown;
 }

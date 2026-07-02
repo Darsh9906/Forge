@@ -1,18 +1,18 @@
 import { api } from "@/lib/api";
 import type {
-	MemoryRecord,
+	MemoryServiceResponse,
 	RecallRequest,
 	RememberRequest,
 } from "@/types/memory";
 
-export async function remember(text: string): Promise<MemoryRecord> {
+export async function remember(text: string): Promise<MemoryServiceResponse> {
 	const payload: RememberRequest = { text };
-	const response = await api.post<MemoryRecord>("/memory/remember", payload);
+	const response = await api.post<MemoryServiceResponse>("/memory/remember", payload);
 	return response.data;
 }
 
-export async function recall(query: string): Promise<MemoryRecord> {
+export async function recall(query: string): Promise<MemoryServiceResponse> {
 	const payload: RecallRequest = { query };
-	const response = await api.post<MemoryRecord>("/memory/recall", payload);
+	const response = await api.post<MemoryServiceResponse>("/memory/recall", payload);
 	return response.data;
 }
