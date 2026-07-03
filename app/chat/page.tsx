@@ -1,13 +1,17 @@
+import ChatHeader from "@/components/chat/ChatHeader";
+import ChatInput from "@/components/chat/ChatInput";
+import ChatMessages from "@/components/chat/ChatMessage";
+
 export default function ChatPage() {
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold">
-        Forge Chat
-      </h1>
+    <div className="mx-auto flex h-[calc(100vh-120px)] max-w-4xl flex-col">
+      <ChatHeader />
 
-      <p className="text-muted-foreground">
-        AI chat interface coming next.
-      </p>
+      <div className="flex-1 overflow-y-auto py-6">
+        <ChatMessages />
+      </div>
+
+      <ChatInput />
     </div>
   );
 }
