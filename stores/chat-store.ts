@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { sendMessage as sendChatMessage } from "@/services/chat-service";
+import { sendMessage as sendChatMessage } from "@/services/chat/chat-service";
 import type {
 	ChatMessage,
 	SendMessageRequest,

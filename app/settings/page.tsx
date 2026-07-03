@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import BackendUrlInput from "@/components/settings/BackendUrlInput";
+import BackendUrlInput from "@/components/settings/BackendUrlCard";
 import MemoryToggle from "@/components/settings/MemoryToggle";
 import ModelSelector from "@/components/settings/ModelSelector";
 import SaveSettingsButton from "@/components/settings/SaveSettingsButton";

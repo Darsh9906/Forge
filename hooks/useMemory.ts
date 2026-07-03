@@ -1,16 +1,19 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
-import { remember, recall } from "@/services/memory-service";
+import { useMemoryStore } from "@/stores/memory-store";
 
-export function useRemember() {
-  return useMutation({
-    mutationFn: remember,
-  });
-}
+export function useMemory() {
+  const memories = useMemoryStore((state) => state.memories);
+  const loading = useMemoryStore((state) => state.loading);
+  const remember = useMemoryStore((state) => state.remember);
+  const recall = useMemoryStore((state) => state.recall);
+  const clearMemories = useMemoryStore((state) => state.clearMemories);
 
-export function useRecall() {
-  return useMutation({
-    mutationFn: recall,
-  });
+  return {
+    memories,
+    loading,
+    remember,
+    recall,
+    clearMemories,
+  };
 }

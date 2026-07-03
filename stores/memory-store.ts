@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { remember as rememberMemory, recall as recallMemory } from "@/services/memory-service";
+import { remember as rememberMemory, recall as recallMemory } from "@/services/memory/memory-service";
 import type {
 	MemoryApiResponse,
 	MemoryRecord,

@@ -1,14 +1,17 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
-import { sendMessage } from "@/services/chat-service";
-import type {
-  SendMessageRequest,
-  SendMessageResponse,
-} from "@/types/chat";
+import { useChatStore } from "@/stores/chat-store";
 
 export function useChat() {
-  return useMutation<SendMessageResponse, Error, SendMessageRequest>({
-    mutationFn: sendMessage,
-  });
+  const messages = useChatStore((state) => state.messages);
+  const loading = useChatStore((state) => state.loading);
+  const sendMessage = useChatStore((state) => state.sendMessage);
+  const clearChat = useChatStore((state) => state.clearChat);
+
+  return {
+    messages,
+    loading,
+    sendMessage,
+    clearChat,
+  };
 }
