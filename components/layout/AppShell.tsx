@@ -9,12 +9,20 @@ type AppShellProps = {
 
 export function AppShell({ children }: AppShellProps) {
 	return (
-		<div className="flex min-h-[calc(100dvh-0px)] flex-col bg-background md:flex-row">
+		<div className="h-dvh bg-background">
+			{/* Fixed desktop sidebar */}
 			<Sidebar />
-			<div className="flex min-w-0 flex-1 flex-col">
+
+			{/* Right column: offset to clear the fixed sidebar on desktop */}
+			<div className="flex h-full flex-col md:pl-64">
 				<Navbar />
-				<main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+
+				{/* Main scrollable region — grows to fill remaining viewport height */}
+				<main className="flex-1 overflow-y-auto">
+					{children}
+				</main>
 			</div>
 		</div>
 	);
 }
+

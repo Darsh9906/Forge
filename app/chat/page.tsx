@@ -4,8 +4,8 @@ import ChatMessages from "@/components/chat/ChatMessage";
 
 export default function ChatPage() {
   return (
-    <main className="mx-auto flex h-[calc(100vh-96px)] w-full max-w-5xl flex-col px-4 py-4 sm:px-6 lg:px-8">
-      <div className="flex h-full flex-col overflow-hidden rounded-3xl border border-border/60 bg-background/95 shadow-sm backdrop-blur">
+    <main className="mx-auto flex h-full w-full max-w-5xl flex-col px-4 py-4 sm:px-6">
+      <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-3xl border border-border/60 bg-background/95 shadow-sm backdrop-blur">
         <div className="border-b border-border/60 px-4 py-4 sm:px-6">
           <ChatHeader />
         </div>
