@@ -69,6 +69,8 @@ export const useMemoryStore = create<MemoryStore>((set) => ({
 			if (nextMemories.length > 0) {
 				set((state) => ({ memories: [...state.memories, ...nextMemories] }));
 			}
+		} catch (err) {
+			throw err;
 		} finally {
 			set({ loading: false });
 		}
@@ -81,6 +83,8 @@ export const useMemoryStore = create<MemoryStore>((set) => ({
 			const nextMemories = normalizeMemories(response);
 
 			set({ memories: nextMemories });
+		} catch (err) {
+			throw err;
 		} finally {
 			set({ loading: false });
 		}

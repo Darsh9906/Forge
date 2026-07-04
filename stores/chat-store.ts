@@ -78,6 +78,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 			if (assistantMessage) {
 				set((state) => ({ messages: [...state.messages, assistantMessage] }));
 			}
+		} catch (err) {
+			throw err;
 		} finally {
 			set({ loading: false });
 		}

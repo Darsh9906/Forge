@@ -1,65 +1,121 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { chatSchema, type ChatFormValues } from "@/lib/schemas/forms";
 import { useChatStore } from "@/stores/chat-store";
+import { useSettingsStore } from "@/stores/settings-store";
+
+const MAX_TEXTAREA_HEIGHT = 200;
 
 export default function ChatInput() {
-	const [text, setText] = useState("");
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 	const loading = useChatStore((state) => state.loading);
 	const sendMessage = useChatStore((state) => state.sendMessage);
+	const selectedModel = useSettingsStore((state) => state.selectedModel);
+	const temperature = useSettingsStore((state) => state.temperature);
+	const useMemory = useSettingsStore((state) => state.useMemory);
+
+	const {
+		register,
+		handleSubmit,
+		reset,
+		formState: { errors, isValid },
+	} = useForm<ChatFormValues>({
+		resolver: zodResolver(chatSchema),
+		defaultValues: { message: "" },
+		mode: "onChange",
+	});
 
 	useEffect(() => {
 		textareaRef.current?.focus();
 	}, []);
 
-	const handleSend = async () => {
-		const message = text.trim();
+	// Grow textarea with content, cap at MAX_TEXTAREA_HEIGHT then scroll
+	const syncHeight = (el: HTMLTextAreaElement) => {
+		el.style.height = "auto";
+		el.style.height = `${Math.min(el.scrollHeight, MAX_TEXTAREA_HEIGHT)}px`;
+	};
 
-		if (!message || loading) {
-			return;
+	const onSubmit = async (data: ChatFormValues) => {
+		if (loading) return;
+		try {
+			await sendMessage(
+				{ role: "user", content: data.message },
+				{
+					model: selectedModel || undefined,
+					temperature,
+					use_memory: useMemory,
+				},
+			);
+			reset();
+			// Collapse the textarea back to its initial height after reset
+			if (textareaRef.current) {
+				textareaRef.current.style.height = "auto";
+				textareaRef.current.focus();
+			}
+		} catch {
+			toast.error("Failed to send message", {
+				description: "Please check your connection and try again.",
+			});
 		}
-
-		await sendMessage({ role: "user", content: message });
-		setText("");
-			textareaRef.current?.focus();
 	};
 
 	const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-		if (event.key !== "Enter" || event.shiftKey) {
-			return;
-		}
-
+		if (event.key !== "Enter" || event.shiftKey) return;
 		event.preventDefault();
-		void handleSend();
+		void handleSubmit(onSubmit)();
 	};
 
+	const { ref: registerRef, onChange: registerOnChange, ...restField } = register("message");
+
 	return (
-		<div className="rounded-3xl border border-border/60 bg-background/95 p-3 shadow-sm backdrop-blur sm:p-4">
-			<div className="flex flex-col gap-3">
+		<form
+			className="flex flex-col gap-3"
+			onSubmit={(e) => void handleSubmit(onSubmit)(e)}
+		>
+			<div className="flex flex-col gap-1">
 				<Textarea
-					ref={textareaRef}
-					value={text}
-					onChange={(event) => setText(event.target.value)}
+					{...restField}
+					ref={(el) => {
+						registerRef(el);
+						textareaRef.current = el;
+					}}
+					onChange={(e) => {
+						void registerOnChange(e);
+						syncHeight(e.currentTarget);
+					}}
 					onKeyDown={handleKeyDown}
 					placeholder="Type a message..."
 					disabled={loading}
-					className="min-h-24 resize-none border-border/70 bg-background text-sm leading-6 shadow-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-70"
+					className="min-h-[90px] max-h-[200px] resize-none overflow-y-auto border-border/70 bg-background text-sm leading-6 shadow-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-70"
 				/>
-				<div className="flex items-center justify-end">
-					<Button
-						type="button"
-						onClick={() => void handleSend()}
-						disabled={loading || text.trim().length === 0}
-						className="min-w-24 rounded-xl"
-					>
-						{loading ? "Sending..." : "Send"}
-					</Button>
-				</div>
+				{errors.message && (
+					<p className="text-xs text-destructive">{errors.message.message}</p>
+				)}
 			</div>
-		</div>
+			<div className="flex items-center justify-end">
+				<Button
+					type="submit"
+					disabled={loading || !isValid}
+					className="min-w-24 rounded-xl"
+				>
+					{loading ? (
+						<>
+							<Loader2 className="size-4 animate-spin" />
+							Sending...
+						</>
+					) : (
+						"Send"
+					)}
+				</Button>
+			</div>
+		</form>
 	);
 }

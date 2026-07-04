@@ -1,6 +1,7 @@
 import axios from "axios";
 
 import { env } from "@/lib/env";
+import { useSettingsStore } from "@/stores/settings-store";
 
 export const api = axios.create({
 	baseURL: env.NEXT_PUBLIC_API_URL,
@@ -12,6 +13,13 @@ export const api = axios.create({
 
 api.interceptors.request.use(
 	(config) => {
+		// Pick up the current backendUrl from the settings store on every request
+		// so that changes made in the Settings page take effect immediately
+		const { backendUrl } = useSettingsStore.getState();
+		if (backendUrl) {
+			config.baseURL = backendUrl;
+		}
+
 		const authToken = undefined;
 
 		if (authToken) {

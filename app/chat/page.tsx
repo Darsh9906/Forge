@@ -10,11 +10,11 @@ export default function ChatPage() {
           <ChatHeader />
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-6">
           <ChatMessages />
         </div>
 
-        <div className="border-t border-border/60 p-4 sm:p-6">
+        <div className="shrink-0 border-t border-border/60 p-4 sm:p-6">
           <ChatInput />
         </div>
       </div>

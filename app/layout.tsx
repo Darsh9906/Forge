@@ -5,6 +5,7 @@ import "./globals.css";
 import { AppShell } from "@/components/layout/AppShell";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,7 +30,10 @@ export default function RootLayout({
     >
      <body className="min-h-dvh bg-background text-foreground font-sans">
   <QueryProvider>
-    <AppShell>{children}</AppShell>
+    <ThemeProvider>
+      <AppShell>{children}</AppShell>
+      <Toaster richColors position="bottom-right" />
+    </ThemeProvider>
   </QueryProvider>
 </body>
     </html>
