@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 
-export async function POST(request: Request) {
-	await request.json().catch(() => null);
+import { recallMemory } from "@/lib/server/memory";
+import type { RecallRequest } from "@/types/memory";
 
-	return NextResponse.json({
-		memories: [
-			{ id: "1", text: "Example Memory 1" },
-			{ id: "2", text: "Example Memory 2" },
-		],
-	});
+export async function POST(request: Request) {
+	const body = (await request.json().catch(() => ({}))) as RecallRequest;
+
+	const result = await recallMemory(body.query);
+
+	return NextResponse.json(result);
 }
+

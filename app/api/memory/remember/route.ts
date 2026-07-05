@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 
-export async function POST(request: Request) {
-	await request.json().catch(() => null);
+import { rememberMemory } from "@/lib/server/memory";
+import type { RememberRequest } from "@/types/memory";
 
-	return NextResponse.json({
-		success: true,
-		message: "Memory saved successfully",
-	});
+export async function POST(request: Request) {
+	const body = (await request.json().catch(() => ({}))) as RememberRequest;
+
+	const result = await rememberMemory(body.text);
+
+	return NextResponse.json(result);
 }
+
