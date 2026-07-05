@@ -1,33 +1,47 @@
-import type { ReactNode } from "react";
-
 import { cn } from "@/lib/utils";
 
 type PageHeaderProps = {
-	title: string;
-	description?: string;
-	actions?: ReactNode;
-	className?: string;
+  title: string;
+  description?: string;
+  className?: string;
+  children?: React.ReactNode;
 };
 
 export default function PageHeader({
-	title,
-	description,
-	actions,
-	className,
+  title,
+  description,
+  className,
+  children,
 }: PageHeaderProps) {
-	return (
-		<section className={cn("space-y-2", className)}>
-			<div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-				<div className="space-y-2">
-					<h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
-					{description ? (
-						<p className="max-w-2xl text-sm text-muted-foreground sm:text-base">
-							{description}
-						</p>
-					) : null}
-				</div>
-				{actions ? <div className="flex items-center gap-2">{actions}</div> : null}
-			</div>
-		</section>
-	);
+  return (
+    <div className={cn("flex items-start justify-between gap-4", className)}>
+      <div>
+        <h1
+          style={{
+            fontSize: 22,
+            fontWeight: 700,
+            color: "#ffffff",
+            letterSpacing: "-0.025em",
+            margin: 0,
+            lineHeight: 1.3,
+          }}
+        >
+          {title}
+        </h1>
+        {description && (
+          <p
+            style={{
+              fontSize: 13,
+              color: "#606060",
+              margin: "4px 0 0",
+              lineHeight: 1.5,
+            }}
+          >
+            {description}
+          </p>
+        )}
+      </div>
+      {children && <div className="flex items-center gap-2">{children}</div>}
+    </div>
+  );
 }

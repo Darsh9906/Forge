@@ -1,5 +1,5 @@
-import PageHeader from "@/components/shared/PageHeader";
+import { redirect } from "next/navigation";
 
 export default function HomePage() {
-  return <PageHeader title="Welcome to Forge" />;
+  redirect("/chat");
 }

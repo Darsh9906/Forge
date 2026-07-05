@@ -1,28 +1,36 @@
+"use client";
+
+import { useState } from "react";
 import type { ReactNode } from "react";
 
-import { Navbar } from "@/components/layout/Navbar";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { Navbar } from "@/components/layout/Navbar";
 
 type AppShellProps = {
-	children: ReactNode;
+  children: ReactNode;
 };
 
 export function AppShell({ children }: AppShellProps) {
-	return (
-		<div className="h-dvh bg-background">
-			{/* Fixed desktop sidebar */}
-			<Sidebar />
+  const [collapsed, setCollapsed] = useState(false);
 
-			{/* Right column: offset to clear the fixed sidebar on desktop */}
-			<div className="flex h-full flex-col md:pl-64">
-				<Navbar />
+  const sidebarWidth = collapsed ? 64 : 240;
 
-				{/* Main scrollable region — grows to fill remaining viewport height */}
-				<main className="flex-1 overflow-y-auto">
-					{children}
-				</main>
-			</div>
-		</div>
-	);
+  return (
+    <div className="h-dvh flex overflow-hidden" style={{ background: "#0a0a0a" }}>
+      {/* Fixed desktop sidebar */}
+      <Sidebar collapsed={collapsed} onToggleCollapse={() => setCollapsed((p) => !p)} />
+
+      {/* Right column: offsets based on sidebar width */}
+      <div
+        className="flex flex-1 flex-col overflow-hidden transition-all duration-300 ease-in-out"
+        style={{ marginLeft: sidebarWidth }}
+      >
+        {/* Mobile navbar (hamburger) */}
+        <Navbar />
+
+        {/* Main scrollable region */}
+        <main className="flex-1 overflow-hidden">{children}</main>
+      </div>
+    </div>
+  );
 }
-

@@ -4,12 +4,16 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ── Google Fonts: Inter ─────────────────────────────────────── */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+
+/* ── Theme mapping ───────────────────────────────────────────── */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-sans: var(--font-inter), "Inter", system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), "Geist Mono", monospace;
+  --font-heading: var(--font-inter), "Inter", system-ui, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -48,83 +52,393 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* ── Forge Design Tokens ─────────────────────────────────────── */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  /* Background scale */
+  --forge-bg-base: #0a0a0a;
+  --forge-bg-secondary: #111111;
+  --forge-bg-card: #151515;
+  --forge-bg-elevated: #1a1a1a;
+
+  /* Borders */
+  --forge-border: rgba(255, 255, 255, 0.08);
+  --forge-border-hover: rgba(255, 255, 255, 0.14);
+
+  /* Text */
+  --forge-text-primary: #ffffff;
+  --forge-text-secondary: #b8b8b8;
+  --forge-text-muted: #808080;
+
+  /* Interaction */
+  --forge-hover: rgba(255, 255, 255, 0.05);
+  --forge-active: rgba(255, 255, 255, 0.09);
+
+  /* Shadows */
+  --forge-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --forge-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.6);
+  --forge-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.7);
+
+  /* Radius */
+  --radius: 0.75rem;
+
+  /* ShadCN tokens — mapped to grayscale */
+  --background: oklch(0.065 0 0);
+  --foreground: oklch(1 0 0);
+  --card: oklch(0.09 0 0);
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0.09 0 0);
+  --popover-foreground: oklch(1 0 0);
+  --primary: oklch(0.97 0 0);
+  --primary-foreground: oklch(0.065 0 0);
+  --secondary: oklch(0.12 0 0);
+  --secondary-foreground: oklch(0.97 0 0);
+  --muted: oklch(0.12 0 0);
+  --muted-foreground: oklch(0.6 0 0);
+  --accent: oklch(0.14 0 0);
+  --accent-foreground: oklch(0.97 0 0);
+  --destructive: oklch(0.55 0.18 25);
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 8%);
+  --ring: oklch(1 0 0 / 15%);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: oklch(0.075 0 0);
+  --sidebar-foreground: oklch(1 0 0);
+  --sidebar-primary: oklch(0.97 0 0);
+  --sidebar-primary-foreground: oklch(0.065 0 0);
+  --sidebar-accent: oklch(0.14 0 0);
+  --sidebar-accent-foreground: oklch(0.97 0 0);
+  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-ring: oklch(1 0 0 / 15%);
 }
 
+/* Dark mode = same (we're always dark) */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: oklch(0.065 0 0);
+  --foreground: oklch(1 0 0);
+  --card: oklch(0.09 0 0);
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0.09 0 0);
+  --popover-foreground: oklch(1 0 0);
+  --primary: oklch(0.97 0 0);
+  --primary-foreground: oklch(0.065 0 0);
+  --secondary: oklch(0.12 0 0);
+  --secondary-foreground: oklch(0.97 0 0);
+  --muted: oklch(0.12 0 0);
+  --muted-foreground: oklch(0.6 0 0);
+  --accent: oklch(0.14 0 0);
+  --accent-foreground: oklch(0.97 0 0);
+  --destructive: oklch(0.55 0.18 25);
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 8%);
+  --ring: oklch(1 0 0 / 15%);
+  --sidebar: oklch(0.075 0 0);
+  --sidebar-foreground: oklch(1 0 0);
+  --sidebar-primary: oklch(0.97 0 0);
+  --sidebar-primary-foreground: oklch(0.065 0 0);
+  --sidebar-accent: oklch(0.14 0 0);
+  --sidebar-accent-foreground: oklch(0.97 0 0);
+  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-ring: oklch(1 0 0 / 15%);
 }
 
+/* ── Base styles ──────────────────────────────────────────────── */
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
+
   html {
-    @apply font-sans;
+    font-family: "Inter", var(--font-inter), system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
+
+  body {
+    background-color: var(--forge-bg-base);
+    color: var(--forge-text-primary);
+    font-family: "Inter", var(--font-inter), system-ui, sans-serif;
+    @apply text-foreground;
+  }
+
+  /* Premium scrollbar */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.18);
+  }
+
+  /* Selection */
+  ::selection {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+  }
+}
+
+/* ── Keyframe Animations ─────────────────────────────────────── */
+@keyframes forge-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes forge-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes forge-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes forge-slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes forge-slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes forge-dot-bounce {
+  0%, 80%, 100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  40% {
+    transform: translateY(-5px);
+    opacity: 1;
+  }
+}
+
+@keyframes forge-shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes forge-pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.04);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(255, 255, 255, 0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Animation Utility Classes ───────────────────────────────── */
+.animate-forge-fade-up {
+  animation: forge-fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-forge-fade-in {
+  animation: forge-fade-in 0.3s ease both;
+}
+
+.animate-forge-scale-in {
+  animation: forge-scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-forge-slide-left {
+  animation: forge-slide-in-left 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-forge-slide-right {
+  animation: forge-slide-in-right 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Staggered message animations */
+.msg-stagger-1 { animation-delay: 0ms; }
+.msg-stagger-2 { animation-delay: 60ms; }
+.msg-stagger-3 { animation-delay: 120ms; }
+
+/* Typing indicator dots */
+.forge-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--forge-text-muted);
+  animation: forge-dot-bounce 1.4s ease-in-out infinite;
+}
+.forge-dot:nth-child(2) { animation-delay: 0.2s; }
+.forge-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* ── Component-level Utilities ───────────────────────────────── */
+
+/* Glass surface */
+.forge-glass {
+  background: rgba(21, 21, 21, 0.7);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--forge-border);
+}
+
+/* Card hover effect */
+.forge-card {
+  background: var(--forge-bg-card);
+  border: 1px solid var(--forge-border);
+  border-radius: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.forge-card:hover {
+  border-color: var(--forge-border-hover);
+  background: var(--forge-bg-elevated);
+  box-shadow: var(--forge-shadow-sm);
+}
+
+/* Button lift effect */
+.forge-btn-lift {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.forge-btn-lift:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+.forge-btn-lift:active:not(:disabled) {
+  transform: translateY(0px);
+}
+
+/* Input focus glow */
+.forge-input-focus {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.forge-input-focus:focus-within {
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.04);
+}
+
+/* Sidebar nav item */
+.forge-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--forge-text-muted);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-decoration: none;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+}
+.forge-nav-item:hover {
+  background: var(--forge-hover);
+  color: var(--forge-text-secondary);
+}
+.forge-nav-item.active {
+  background: var(--forge-active);
+  color: var(--forge-text-primary);
+}
+
+/* Sidebar label (fades on collapse) */
+.forge-nav-label {
+  transition: opacity 0.2s ease, width 0.2s ease;
+  overflow: hidden;
+}
+
+/* Code blocks in messages */
+.forge-code {
+  background: var(--forge-bg-secondary);
+  border: 1px solid var(--forge-border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  color: #e0e0e0;
+}
+
+/* Shimmer loading skeleton */
+.forge-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--forge-bg-card) 25%,
+    rgba(255, 255, 255, 0.04) 50%,
+    var(--forge-bg-card) 75%
+  );
+  background-size: 200% 100%;
+  animation: forge-shimmer 1.5s ease-in-out infinite;
+  border-radius: 0.5rem;
+}
+
+/* Sidebar tooltip */
+.forge-tooltip {
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--forge-bg-elevated);
+  border: 1px solid var(--forge-border);
+  border-radius: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--forge-text-primary);
+  white-space: nowrap;
+  box-shadow: var(--forge-shadow-md);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 100;
+}
+.forge-tooltip-trigger:hover .forge-tooltip {
+  opacity: 1;
 }

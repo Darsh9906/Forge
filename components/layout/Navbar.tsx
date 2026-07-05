@@ -1,64 +1,194 @@
 "use client";
 
 import { useState } from "react";
-import { MenuIcon } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { MenuIcon, X } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import {
-	Sheet,
-	SheetContent,
-	SheetHeader,
-	SheetTitle,
-} from "@/components/ui/sheet";
 import { SidebarNav } from "@/components/layout/Sidebar";
 
+const pageTitles: Record<string, string> = {
+  "/": "Home",
+  "/chat": "Chat",
+  "/memory": "Memory",
+  "/settings": "Settings",
+};
+
 export function Navbar() {
-	const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const pathname = usePathname();
 
-	return (
-		<>
-			<header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-border/60 bg-background/90 px-4 backdrop-blur sm:px-6">
-				{/* Hamburger — mobile only */}
-				<Button
-					variant="ghost"
-					size="icon"
-					className="md:hidden"
-					aria-label="Open navigation"
-					onClick={() => setDrawerOpen(true)}
-				>
-					<MenuIcon className="size-5" />
-				</Button>
+  // Find the closest matching page title
+  const title =
+    Object.entries(pageTitles)
+      .reverse()
+      .find(([path]) => pathname.startsWith(path))?.[1] ?? "Forge AI";
 
-				{/* Brand — visible on mobile (desktop brand is in the fixed sidebar) */}
-				<div className="flex items-center gap-2 font-semibold tracking-tight md:hidden">
-					<span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground text-xs">
-						F
-					</span>
-					<span>Forge</span>
-				</div>
+  return (
+    <>
+      {/* Mobile-only top bar */}
+      <header
+        className="sticky top-0 z-40 flex items-center md:hidden"
+        style={{
+          height: 56,
+          background: "rgba(10,10,10,0.9)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          padding: "0 16px",
+          gap: 12,
+        }}
+      >
+        {/* Hamburger */}
+        <button
+          onClick={() => setDrawerOpen(true)}
+          aria-label="Open navigation"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 36,
+            height: 36,
+            borderRadius: 8,
+            border: "1px solid rgba(255,255,255,0.08)",
+            background: "transparent",
+            cursor: "pointer",
+            color: "#b8b8b8",
+          }}
+        >
+          <MenuIcon size={16} />
+        </button>
 
-				<div className="flex-1" />
+        {/* Mobile brand */}
+        <div className="flex items-center" style={{ gap: 8 }}>
+          <div
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 8,
+              background: "#ffffff",
+              color: "#0a0a0a",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 12,
+              fontWeight: 700,
+            }}
+          >
+            F
+          </div>
+          <span style={{ fontSize: 14, fontWeight: 600, color: "#ffffff" }}>
+            {title}
+          </span>
+        </div>
+      </header>
 
-				<Button variant="outline" size="sm" type="button">
-					Theme
-				</Button>
-			</header>
+      {/* Mobile drawer overlay */}
+      {drawerOpen && (
+        <div
+          className="fixed inset-0 z-50 md:hidden"
+          onClick={() => setDrawerOpen(false)}
+          style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}
+        />
+      )}
 
-			{/* Mobile sidebar drawer */}
-			<Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
-				<SheetContent side="left" className="w-72 px-5 py-6">
-					<SheetHeader className="mb-4 px-0">
-						<SheetTitle className="flex items-center gap-2 font-semibold tracking-tight">
-							<span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm">
-								F
-							</span>
-							Forge
-						</SheetTitle>
-					</SheetHeader>
-					<SidebarNav onNavigate={() => setDrawerOpen(false)} />
-				</SheetContent>
-			</Sheet>
-		</>
-	);
+      {/* Mobile drawer panel */}
+      <div
+        className="fixed inset-y-0 left-0 z-50 flex flex-col md:hidden"
+        style={{
+          width: 280,
+          background: "#0d0d0d",
+          borderRight: "1px solid rgba(255,255,255,0.06)",
+          transform: drawerOpen ? "translateX(0)" : "translateX(-100%)",
+          transition: "transform 0.28s cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
+      >
+        {/* Drawer header */}
+        <div
+          className="flex items-center justify-between"
+          style={{
+            height: 56,
+            padding: "0 16px",
+            borderBottom: "1px solid rgba(255,255,255,0.06)",
+            flexShrink: 0,
+          }}
+        >
+          <div className="flex items-center" style={{ gap: 10 }}>
+            <div
+              style={{
+                width: 30,
+                height: 30,
+                borderRadius: 9,
+                background: "#ffffff",
+                color: "#0a0a0a",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 13,
+                fontWeight: 700,
+              }}
+            >
+              F
+            </div>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: "#ffffff" }}>
+                Forge AI
+              </div>
+              <div
+                style={{
+                  fontSize: 10,
+                  color: "#606060",
+                  letterSpacing: "0.04em",
+                  textTransform: "uppercase",
+                }}
+              >
+                Memory Assistant
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => setDrawerOpen(false)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 32,
+              height: 32,
+              borderRadius: 8,
+              border: "none",
+              background: "transparent",
+              color: "#606060",
+              cursor: "pointer",
+            }}
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* New Chat */}
+        <div style={{ padding: "12px 12px" }}>
+          <Link href="/chat" onClick={() => setDrawerOpen(false)}>
+            <button
+              className="w-full flex items-center justify-center rounded-xl font-medium text-sm"
+              style={{
+                height: 36,
+                background: "#ffffff",
+                color: "#0a0a0a",
+                border: "none",
+                cursor: "pointer",
+                gap: 8,
+              }}
+            >
+              + New Chat
+            </button>
+          </Link>
+        </div>
+
+        {/* Nav */}
+        <div style={{ padding: "0 8px", flex: 1 }}>
+          <SidebarNav onNavigate={() => setDrawerOpen(false)} />
+        </div>
+      </div>
+    </>
+  );
 }
-

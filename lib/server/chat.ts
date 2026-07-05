@@ -1,5 +1,3 @@
-import { GoogleGenAI } from "@google/genai";
-
 import type { SendMessageRequest, SendMessageResponse } from "@/types/chat";
 
 import {
@@ -12,11 +10,36 @@ import {
 // ---------------------------------------------------------------------------
 
 /**
- * Map the frontend role names ("user" / "assistant") to the Gemini role names
- * ("user" / "model"). Any other role is treated as "user".
+ * Resolve the FastAPI backend base URL.
+ *
+ * Priority order:
+ *   1. PYTHON_API_URL  – explicit server-side env var (never exposed to browser)
+ *   2. Hard-coded fallback for local development
+ *
+ * Using a server-side-only variable (no NEXT_PUBLIC_ prefix) guarantees the
+ * URL is never shipped in the client bundle.
  */
-function toGeminiRole(role: string): "user" | "model" {
-	return role === "assistant" ? "model" : "user";
+function getPythonApiUrl(): string {
+	return (
+		(process.env.PYTHON_API_URL ?? "").trim() || "http://localhost:8000"
+	);
+}
+
+/**
+ * Extract the latest user message from the messages array.
+ *
+ * The FastAPI /chat endpoint expects a single `message` string. We send the
+ * most recent non-empty user turn so that Cognee recall is scoped to what
+ * the user just asked, while the full conversation history is already stored
+ * in Cognee memory via the /remember endpoint.
+ */
+function extractLatestUserMessage(
+	request: SendMessageRequest,
+): string | null {
+	const userMessages = request.messages.filter(
+		(m) => m.role === "user" && typeof m.content === "string" && m.content.trim() !== "",
+	);
+	return userMessages.at(-1)?.content ?? null;
 }
 
 // ---------------------------------------------------------------------------
@@ -37,93 +60,100 @@ export async function sendChat(
 		};
 	}
 
-	// ── 2. Validate env ─────────────────────────────────────────────────────
-	const apiKey = process.env.GEMINI_API_KEY;
-	if (!apiKey || apiKey.trim() === "") {
-		return {
-			success: false,
-			error: {
-				code: "CONFIGURATION_ERROR",
-				message:
-					"Gemini API key is not configured. Set the GEMINI_API_KEY environment variable.",
-			},
-		};
-	}
-
-	const model =
-		(process.env.GEMINI_MODEL ?? "").trim() || "gemini-2.0-flash";
-
-	// ── 3. Build the contents array ─────────────────────────────────────────
-	// Gemini requires the conversation to start with a "user" turn.
-	// Filter out any leading "model" messages to satisfy that constraint.
-	const contents = request.messages
-		.filter((m) => typeof m.content === "string" && m.content.trim() !== "")
-		.map((m) => ({
-			role: toGeminiRole(m.role),
-			parts: [{ text: m.content }],
-		}));
-
-	if (contents.length === 0) {
+	// ── 2. Extract the user's latest message ────────────────────────────────
+	const latestMessage = extractLatestUserMessage(request);
+	if (!latestMessage) {
 		return {
 			success: false,
 			error: {
 				code: "INVALID_REQUEST",
-				message: "At least one non-empty message is required.",
+				message: "At least one non-empty user message is required.",
 			},
 		};
 	}
 
-	// ── 4. Call Gemini ───────────────────────────────────────────────────────
-	try {
-		const ai = new GoogleGenAI({ apiKey });
+	// ── 3. Call the FastAPI /chat endpoint ───────────────────────────────────
+	const baseUrl = getPythonApiUrl();
+	const url = `${baseUrl}/chat`;
 
-		const geminiResponse = await ai.models.generateContent({
-			model,
-			contents,
+	try {
+		const httpResponse = await fetch(url, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ message: latestMessage }),
+			// Abort the request if the FastAPI server does not respond in time.
+			signal: AbortSignal.timeout(30_000),
 		});
 
-		const text = geminiResponse.text ?? "";
-
-		const response: SendMessageResponse = {
-			content: text,
-		};
-
-		return createServerSuccess(response);
-	} catch (err: unknown) {
-		// Surface a clean error without exposing the API key or internal stack.
-		const isApiError =
-			err instanceof Error && err.constructor.name === "ApiError";
-
-		if (isApiError) {
-			// Try to extract a human-readable message from the JSON payload
-			// that @google/genai surfaces as err.message.
-			let userMessage = "Gemini API request failed.";
+		// ── 4. Handle non-2xx HTTP errors from FastAPI ──────────────────────
+		if (!httpResponse.ok) {
+			// FastAPI returns { "detail": "..." } for HTTPExceptions.
+			let detail = `FastAPI returned HTTP ${httpResponse.status}.`;
 			try {
-				const parsed = JSON.parse((err as Error).message) as {
-					error?: { message?: string };
+				const errBody = (await httpResponse.json()) as {
+					detail?: string;
 				};
-				if (typeof parsed?.error?.message === "string") {
-					userMessage = parsed.error.message;
+				if (typeof errBody.detail === "string" && errBody.detail.trim()) {
+					detail = errBody.detail;
 				}
 			} catch {
-				// err.message wasn't JSON – use it directly.
-				userMessage = (err as Error).message;
+				// Body was not JSON; keep the default message.
 			}
 
 			return {
 				success: false,
 				error: {
-					code: "GEMINI_API_ERROR",
-					message: userMessage,
+					code: `HTTP_${httpResponse.status}`,
+					message: detail,
 				},
 			};
 		}
 
-		// Generic / unexpected error
+		// ── 5. Parse the FastAPI success response ────────────────────────────
+		// FastAPI /chat returns { "response": "..." }
+		const data = (await httpResponse.json()) as { response?: string };
+
+		const content =
+			typeof data.response === "string" ? data.response : "";
+
+		const response: SendMessageResponse = {
+			// Map FastAPI's `response` field → SendMessageResponse's `content`
+			// field. The store reads `response.content` first, so this is the
+			// correct target property.
+			content,
+		};
+
+		return createServerSuccess(response);
+	} catch (err: unknown) {
+		// ── 6. Handle network / timeout errors ───────────────────────────────
+		if (err instanceof DOMException && err.name === "TimeoutError") {
+			return {
+				success: false,
+				error: {
+					code: "TIMEOUT_ERROR",
+					message: "The request to the AI backend timed out. Please try again.",
+				},
+			};
+		}
+
+		// fetch() throws a TypeError when the connection is refused or the
+		// hostname cannot be resolved (i.e. the FastAPI server is not running).
+		if (err instanceof TypeError) {
+			return {
+				success: false,
+				error: {
+					code: "BACKEND_UNAVAILABLE",
+					message:
+						"Could not reach the AI backend. Make sure the FastAPI server is running on " +
+						getPythonApiUrl(),
+				},
+			};
+		}
+
 		const message =
 			err instanceof Error
 				? err.message
-				: "An unexpected error occurred while contacting Gemini.";
+				: "An unexpected error occurred while contacting the AI backend.";
 
 		return {
 			success: false,
@@ -136,5 +166,3 @@ export async function sendChat(
 }
 
 export const sendChatCompletion = sendChat;
-
-

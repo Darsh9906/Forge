@@ -1,23 +1,31 @@
-import ChatHeader from "@/components/chat/ChatHeader";
-import ChatInput from "@/components/chat/ChatInput";
 import ChatMessages from "@/components/chat/ChatMessage";
+import ChatInput from "@/components/chat/ChatInput";
 
 export default function ChatPage() {
   return (
-    <main className="mx-auto flex h-full w-full max-w-5xl flex-col px-4 py-4 sm:px-6">
-      <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-3xl border border-border/60 bg-background/95 shadow-sm backdrop-blur">
-        <div className="border-b border-border/60 px-4 py-4 sm:px-6">
-          <ChatHeader />
-        </div>
+    <div
+      className="flex h-full flex-col"
+      style={{ background: "#0a0a0a" }}
+    >
+      {/* Messages — fills all available space */}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <ChatMessages />
+      </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-6">
-          <ChatMessages />
-        </div>
-
-        <div className="shrink-0 border-t border-border/60 p-4 sm:p-6">
+      {/* Input — pinned to bottom */}
+      <div
+        style={{
+          padding: "12px 20px 20px",
+          borderTop: "1px solid rgba(255,255,255,0.04)",
+          background: "rgba(10,10,10,0.95)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+        }}
+      >
+        <div style={{ maxWidth: 750, margin: "0 auto" }}>
           <ChatInput />
         </div>
       </div>
-    </main>
+    </div>
   );
 }
