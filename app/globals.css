@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ── Google Fonts: Inter ─────────────────────────────────────── */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+
 
 /* ── Theme mapping ───────────────────────────────────────────── */
 @theme inline {
@@ -438,7 +438,142 @@
   opacity: 0;
   transition: opacity 0.15s ease;
   z-index: 100;
+  display: none !important;
 }
-.forge-tooltip-trigger:hover .forge-tooltip {
-  opacity: 1;
+
+/* ── Responsive Sidebar Width Variables ── */
+.sidebar-wrapper {
+  --sidebar-width: 0px;
+}
+
+@media (min-width: 768px) {
+  .sidebar-wrapper {
+    --sidebar-width: 80px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .sidebar-wrapper {
+    --sidebar-width: 300px;
+  }
+  .sidebar-wrapper.sidebar-collapsed {
+    --sidebar-width: 80px;
+  }
+}
+
+/* Tooltip controls based on state */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .forge-tooltip-trigger:hover .forge-tooltip {
+    display: block !important;
+    opacity: 1 !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .sidebar-collapsed .forge-tooltip-trigger:hover .forge-tooltip {
+    display: block !important;
+    opacity: 1 !important;
+  }
+}
+
+/* ── Responsive Sidebar Elements ── */
+.sidebar-wordmark,
+.sidebar-nav-label,
+.sidebar-recent-chats,
+.sidebar-new-chat-text,
+.sidebar-profile-text,
+.sidebar-divider {
+  transition: opacity 0.2s ease, width 0.2s ease;
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .sidebar-wordmark {
+    opacity: 0 !important;
+    width: 0 !important;
+    margin-left: 0 !important;
+    pointer-events: none;
+  }
+  .sidebar-nav-label {
+    opacity: 0 !important;
+    width: 0 !important;
+    pointer-events: none;
+  }
+  .sidebar-recent-chats {
+    display: none !important;
+  }
+  .sidebar-divider {
+    display: none !important;
+  }
+  .sidebar-new-chat-text {
+    display: none !important;
+  }
+  .sidebar-profile-text {
+    display: none !important;
+  }
+  .sidebar-nav-item {
+    justify-content: center !important;
+    padding: 9px !important;
+  }
+  .sidebar-new-chat-btn {
+    padding: 0 !important;
+    justify-content: center !important;
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+    margin: 0 auto !important;
+  }
+  .sidebar-logo-container {
+    padding: 0 !important;
+    justify-content: center !important;
+  }
+  .sidebar-profile-btn {
+    justify-content: center !important;
+    padding: 8px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .sidebar-collapsed .sidebar-wordmark {
+    opacity: 0 !important;
+    width: 0 !important;
+    margin-left: 0 !important;
+    pointer-events: none;
+  }
+  .sidebar-collapsed .sidebar-nav-label {
+    opacity: 0 !important;
+    width: 0 !important;
+    pointer-events: none;
+  }
+  .sidebar-collapsed .sidebar-recent-chats {
+    display: none !important;
+  }
+  .sidebar-collapsed .sidebar-divider {
+    display: none !important;
+  }
+  .sidebar-collapsed .sidebar-new-chat-text {
+    display: none !important;
+  }
+  .sidebar-collapsed .sidebar-profile-text {
+    display: none !important;
+  }
+  .sidebar-collapsed .sidebar-nav-item {
+    justify-content: center !important;
+    padding: 9px !important;
+  }
+  .sidebar-collapsed .sidebar-new-chat-btn {
+    padding: 0 !important;
+    justify-content: center !important;
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+    margin: 0 auto !important;
+  }
+  .sidebar-collapsed .sidebar-logo-container {
+    padding: 0 !important;
+    justify-content: center !important;
+  }
+  .sidebar-collapsed .sidebar-profile-btn {
+    justify-content: center !important;
+    padding: 8px !important;
+  }
 }

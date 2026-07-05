@@ -21,12 +21,12 @@ export default function ChatMessages() {
 
   return (
     <div
-      className="h-full overflow-y-auto"
-      style={{ padding: "32px 24px" }}
+      className="h-full overflow-y-auto w-full"
+      style={{ padding: "clamp(16px, 4vw, 32px) clamp(12px, 3vw, 24px)" }}
     >
       <div
-        className="mx-auto flex flex-col"
-        style={{ maxWidth: 750, gap: 28 }}
+        className="mx-auto flex flex-col w-full"
+        style={{ maxWidth: 900, gap: 24 }}
       >
         {messages.map((message, index) => (
           <MessageBubble

@@ -28,14 +28,14 @@ export default function EmptyState({
     // Fallback generic empty state
     return (
       <div
-        className={`flex flex-col items-center justify-center text-center ${className ?? ""}`}
-        style={{ padding: "48px 24px" }}
+        className={`flex flex-col items-center justify-center text-center px-4 animate-forge-fade-in ${className ?? ""}`}
+        style={{ padding: "48px 16px" }}
       >
-        <p style={{ fontSize: 14, fontWeight: 500, color: "#b8b8b8" }}>
+        <p className="text-sm sm:text-base font-medium text-foreground m-0">
           {title}
         </p>
         {description && (
-          <p style={{ fontSize: 13, color: "#606060", marginTop: 4 }}>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-2 max-w-md leading-relaxed m-0">
             {description}
           </p>
         )}
@@ -49,11 +49,11 @@ export default function EmptyState({
 
   return (
     <div
-      className="flex h-full flex-col items-center justify-center animate-forge-fade-in"
-      style={{ padding: "40px 24px", gap: 32 }}
+      className="flex h-full flex-col items-center justify-center animate-forge-fade-in px-4"
+      style={{ padding: "40px 16px", gap: "5dvh" }} // Use dynamic viewport gap for scaling
     >
       {/* Logo glyph with halo */}
-      <div className="flex flex-col items-center" style={{ gap: 24 }}>
+      <div className="flex flex-col items-center gap-4 sm:gap-6">
         <div
           style={{
             position: "relative",
@@ -75,9 +75,8 @@ export default function EmptyState({
           />
           {/* Logo mark */}
           <div
+            className="w-12 h-12 sm:w-14 sm:h-14"
             style={{
-              width: 56,
-              height: 56,
               borderRadius: 18,
               background: "#ffffff",
               color: "#0a0a0a",
@@ -96,63 +95,32 @@ export default function EmptyState({
         </div>
 
         {/* Headings */}
-        <div className="flex flex-col items-center" style={{ gap: 8, textAlign: "center" }}>
-          <h1
-            style={{
-              fontSize: 28,
-              fontWeight: 700,
-              color: "#ffffff",
-              letterSpacing: "-0.03em",
-              lineHeight: 1.2,
-              margin: 0,
-            }}
-          >
+        <div className="flex flex-col items-center gap-2 text-center px-2">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white m-0">
             Forge AI
           </h1>
-          <p
-            style={{
-              fontSize: 13,
-              fontWeight: 500,
-              color: "#606060",
-              letterSpacing: "0.06em",
-              textTransform: "uppercase",
-              margin: 0,
-            }}
-          >
+          <p className="text-[10px] sm:text-xs font-semibold tracking-widest text-[#606060] uppercase m-0">
             Persistent Memory Assistant
           </p>
-          <p
-            style={{
-              fontSize: 15,
-              color: "#808080",
-              marginTop: 8,
-              margin: "8px 0 0",
-              maxWidth: 360,
-              lineHeight: 1.6,
-            }}
-          >
+          <p className="text-sm sm:text-base text-[#808080] mt-3 sm:mt-4 max-w-sm sm:max-w-md leading-relaxed m-0">
             What would you like me to remember today?
           </p>
         </div>
       </div>
 
       {/* Example prompts */}
-      <div
-        className="flex flex-wrap items-center justify-center"
-        style={{ gap: 8, maxWidth: 480 }}
-      >
+      <div className="flex flex-wrap items-center justify-center gap-2 max-w-lg px-2">
         {EXAMPLE_PROMPTS.map((prompt) => (
           <button
             key={prompt}
             onClick={() => handlePrompt(prompt)}
-            className="forge-btn-lift"
+            className="forge-btn-lift text-xs sm:text-sm"
             style={{
               padding: "8px 16px",
               borderRadius: 999,
               border: "1px solid rgba(255,255,255,0.08)",
               background: "rgba(255,255,255,0.03)",
               color: "#808080",
-              fontSize: 13,
               fontWeight: 400,
               cursor: "pointer",
               transition: "border-color 0.15s ease, color 0.15s ease, background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease",
@@ -176,7 +144,7 @@ export default function EmptyState({
       </div>
 
       {/* Subtle footer hint */}
-      <p style={{ fontSize: 11, color: "#383838", letterSpacing: "0.02em" }}>
+      <p className="text-[10px] sm:text-xs text-[#383838] tracking-wider m-0">
         Press ⏎ to send · ⇧⏎ for newline
       </p>
     </div>

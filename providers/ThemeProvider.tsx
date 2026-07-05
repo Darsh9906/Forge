@@ -1,21 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect } from "react";
-import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes";
-
-import { useSettingsStore } from "@/stores/settings-store";
-
-function ThemeSync() {
-	const storedTheme = useSettingsStore((state) => state.theme);
-	const { setTheme } = useTheme();
-
-	useEffect(() => {
-		setTheme(storedTheme);
-	}, [storedTheme, setTheme]);
-
-	return null;
-}
+import { ThemeProvider as NextThemesProvider } from "next-themes";
 
 type ThemeProviderProps = {
 	children: ReactNode;
@@ -26,10 +12,9 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 		<NextThemesProvider
 			attribute="class"
 			defaultTheme="dark"
-			enableSystem
+			forcedTheme="dark"
 			disableTransitionOnChange
 		>
-			<ThemeSync />
 			{children}
 		</NextThemesProvider>
 	);

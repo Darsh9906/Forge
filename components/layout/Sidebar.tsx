@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -10,6 +11,7 @@ import {
   Plus,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Clock,
   User,
 } from "lucide-react";
@@ -43,25 +45,24 @@ type SidebarProps = {
 
 export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
+  const [recentOpen, setRecentOpen] = useState(true);
 
   return (
     <aside
-      className="fixed inset-y-0 left-0 z-30 hidden flex-col md:flex"
+      className="fixed inset-y-0 left-0 z-30 hidden flex-col md:flex transition-all duration-300 ease-in-out"
       style={{
-        width: collapsed ? 64 : 240,
+        width: "var(--sidebar-width)",
         background: "#0d0d0d",
         borderRight: "1px solid rgba(255,255,255,0.06)",
-        transition: "width 0.28s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
     >
       {/* ── Logo ── */}
       <div
-        className="flex items-center overflow-hidden"
+        className="flex items-center overflow-hidden sidebar-logo-container shrink-0"
         style={{
           height: 64,
-          padding: collapsed ? "0 16px" : "0 20px",
+          padding: "0 20px",
           borderBottom: "1px solid rgba(255,255,255,0.06)",
-          flexShrink: 0,
         }}
       >
         {/* Logo mark */}
@@ -81,14 +82,11 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
           F
         </div>
 
-        {/* Wordmark — fades out on collapse */}
+        {/* Wordmark */}
         <div
-          className="flex flex-col overflow-hidden"
+          className="flex flex-col overflow-hidden sidebar-wordmark"
           style={{
             marginLeft: 12,
-            opacity: collapsed ? 0 : 1,
-            width: collapsed ? 0 : "auto",
-            transition: "opacity 0.2s ease, width 0.28s ease",
           }}
         >
           <span
@@ -120,14 +118,14 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
 
       {/* ── New Chat Button ── */}
       <div
+        className="shrink-0 sidebar-logo-container"
         style={{
-          padding: collapsed ? "12px 12px" : "12px 12px",
-          flexShrink: 0,
+          padding: "12px 12px",
         }}
       >
         <Link href="/chat" className="block">
           <button
-            className="forge-btn-lift flex items-center justify-center w-full rounded-xl font-medium text-sm"
+            className="forge-btn-lift flex items-center justify-center w-full rounded-xl font-medium text-sm sidebar-new-chat-btn"
             style={{
               height: 36,
               background: "#ffffff",
@@ -136,7 +134,6 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
               cursor: "pointer",
               gap: 8,
               overflow: "hidden",
-              flexShrink: 0,
               whiteSpace: "nowrap",
               transition: "transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease",
             }}
@@ -148,22 +145,19 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
             }}
           >
             <Plus size={15} strokeWidth={2.5} style={{ flexShrink: 0 }} />
-            {!collapsed && (
-              <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
-                New Chat
-              </span>
-            )}
+            <span className="sidebar-new-chat-text" style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+              New Chat
+            </span>
           </button>
         </Link>
       </div>
 
       {/* ── Primary Nav ── */}
       <nav
-        className="flex flex-col"
+        className="flex flex-col shrink-0"
         style={{
           padding: "4px 8px",
           gap: 2,
-          flexShrink: 0,
         }}
       >
         {primaryNav.map((item) => {
@@ -177,14 +171,13 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
             <div key={item.href} className="relative forge-tooltip-trigger">
               <Link href={item.href} className="block">
                 <div
-                  className="forge-nav-item"
+                  className="forge-nav-item sidebar-nav-item"
                   style={{
                     background: isActive
                       ? "rgba(255,255,255,0.09)"
                       : "transparent",
                     color: isActive ? "#ffffff" : "#808080",
-                    justifyContent: collapsed ? "center" : "flex-start",
-                    padding: collapsed ? "9px" : "9px 12px",
+                    padding: "9px 12px",
                   }}
                 >
                   <Icon
@@ -192,48 +185,50 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
                     strokeWidth={isActive ? 2.2 : 1.8}
                     style={{ flexShrink: 0 }}
                   />
-                  {!collapsed && (
-                    <span className="forge-nav-label">{item.label}</span>
-                  )}
+                  <span className="forge-nav-label sidebar-nav-label">{item.label}</span>
                 </div>
               </Link>
-              {/* Tooltip on collapse */}
-              {collapsed && (
-                <div className="forge-tooltip">{item.label}</div>
-              )}
+              <div className="forge-tooltip">{item.label}</div>
             </div>
           );
         })}
       </nav>
 
       {/* ── Divider ── */}
-      {!collapsed && (
-        <div
-          style={{
-            margin: "8px 12px",
-            borderTop: "1px solid rgba(255,255,255,0.06)",
-          }}
-        />
-      )}
+      <div
+        className="sidebar-divider"
+        style={{
+          margin: "8px 12px",
+          borderTop: "1px solid rgba(255,255,255,0.06)",
+        }}
+      />
 
       {/* ── Recent Conversations ── */}
-      {!collapsed && (
-        <div
-          className="flex-1 overflow-y-auto"
-          style={{ padding: "0 8px" }}
+      <div
+        className="flex-1 overflow-y-auto sidebar-recent-chats"
+        style={{ padding: "0 8px" }}
+      >
+        <button
+          onClick={() => setRecentOpen(!recentOpen)}
+          className="w-full flex items-center justify-between"
+          style={{
+            padding: "4px 8px 6px",
+            fontSize: 10,
+            fontWeight: 600,
+            letterSpacing: "0.08em",
+            color: "#484848",
+            textTransform: "uppercase",
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+          }}
         >
-          <div
-            style={{
-              padding: "4px 8px 6px",
-              fontSize: 10,
-              fontWeight: 600,
-              letterSpacing: "0.08em",
-              color: "#484848",
-              textTransform: "uppercase",
-            }}
-          >
-            Recent
-          </div>
+          <span>Recent</span>
+          <span className="flex items-center">
+            {recentOpen ? <ChevronDown size={10} /> : <ChevronRight size={10} />}
+          </span>
+        </button>
+        {recentOpen && (
           <div className="flex flex-col" style={{ gap: 1 }}>
             {recentConversations.map((convo) => (
               <button
@@ -255,18 +250,15 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
               </button>
             ))}
           </div>
-        </div>
-      )}
-
-      {/* Spacer when collapsed */}
-      {collapsed && <div className="flex-1" />}
+        )}
+      </div>
 
       {/* ── Bottom section ── */}
       <div
+        className="shrink-0"
         style={{
           padding: "8px 8px",
           borderTop: "1px solid rgba(255,255,255,0.06)",
-          flexShrink: 0,
         }}
       >
         {/* Settings nav */}
@@ -277,40 +269,35 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
             <div key={item.href} className="relative forge-tooltip-trigger">
               <Link href={item.href} className="block">
                 <div
-                  className="forge-nav-item"
+                  className="forge-nav-item sidebar-nav-item"
                   style={{
                     background: isActive
                       ? "rgba(255,255,255,0.09)"
                       : "transparent",
                     color: isActive ? "#ffffff" : "#606060",
-                    justifyContent: collapsed ? "center" : "flex-start",
-                    padding: collapsed ? "9px" : "9px 12px",
+                    padding: "9px 12px",
                   }}
                 >
                   <Icon size={16} strokeWidth={1.8} style={{ flexShrink: 0 }} />
-                  {!collapsed && (
-                    <span className="forge-nav-label">{item.label}</span>
-                  )}
+                  <span className="forge-nav-label sidebar-nav-label">{item.label}</span>
                 </div>
               </Link>
-              {collapsed && (
-                <div className="forge-tooltip">{item.label}</div>
-              )}
+              <div className="forge-tooltip">{item.label}</div>
             </div>
           );
         })}
 
         {/* Profile row */}
         <div
-          className="flex items-center overflow-hidden rounded-xl"
+          className="flex items-center overflow-hidden rounded-xl sidebar-profile-btn"
           style={{
             marginTop: 4,
-            padding: collapsed ? "8px" : "8px 12px",
+            padding: "8px 12px",
             gap: 10,
             cursor: "pointer",
             background: "transparent",
             transition: "background 0.15s ease",
-            justifyContent: collapsed ? "center" : "flex-start",
+            justifyContent: "flex-start",
           }}
           onMouseOver={(e) => {
             (e.currentTarget as HTMLDivElement).style.background =
@@ -332,22 +319,20 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
           >
             <User size={13} style={{ color: "#b8b8b8" }} />
           </div>
-          {!collapsed && (
-            <div className="flex flex-col overflow-hidden">
-              <span
-                style={{
-                  fontSize: 13,
-                  fontWeight: 500,
-                  color: "#b8b8b8",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
-              >
-                You
-              </span>
-            </div>
-          )}
+          <div className="flex flex-col overflow-hidden sidebar-profile-text">
+            <span
+              style={{
+                fontSize: 13,
+                fontWeight: 500,
+                color: "#b8b8b8",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              You
+            </span>
+          </div>
         </div>
       </div>
 
@@ -355,7 +340,7 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
       <button
         onClick={onToggleCollapse}
         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        className="absolute"
+        className="absolute hidden lg:flex"
         style={{
           top: "50%",
           right: -12,
@@ -365,7 +350,6 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
           borderRadius: "50%",
           background: "#1a1a1a",
           border: "1px solid rgba(255,255,255,0.1)",
-          display: "flex",
           alignItems: "center",
           justifyContent: "center",
           cursor: "pointer",

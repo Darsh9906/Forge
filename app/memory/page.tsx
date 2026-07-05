@@ -5,17 +5,17 @@ import MemorySearch from "@/components/memory/MemorySearch";
 export default function MemoryPage() {
   return (
     <div
-      className="h-full overflow-y-auto"
+      className="h-full overflow-y-auto w-full"
       style={{ background: "#0a0a0a" }}
     >
       <div
-        className="mx-auto"
+        className="mx-auto animate-forge-fade-in"
         style={{
-          maxWidth: 740,
-          padding: "40px 24px 80px",
+          maxWidth: 900,
+          padding: "clamp(24px, 5vw, 40px) clamp(12px, 4vw, 24px) 80px",
           display: "flex",
           flexDirection: "column",
-          gap: 14,
+          gap: 16,
         }}
       >
         {/* Page title */}

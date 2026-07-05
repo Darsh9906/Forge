@@ -3,18 +3,20 @@ import MemoryToggle from "@/components/settings/MemoryToggle";
 import ModelSelector from "@/components/settings/ModelSelector";
 import SaveSettingsButton from "@/components/settings/SaveSettingsButton";
 import TemperatureSlider from "@/components/settings/TemperatureSlider";
-import ThemeSelector from "@/components/settings/ThemeSelector";
 import SectionCard from "@/components/shared/SectionCard";
 
 export default function SettingsPage() {
   return (
     <div
-      className="h-full overflow-y-auto"
+      className="h-full overflow-y-auto w-full"
       style={{ background: "#0a0a0a" }}
     >
       <div
-        className="mx-auto"
-        style={{ maxWidth: 680, padding: "40px 24px 80px" }}
+        className="mx-auto animate-forge-fade-in"
+        style={{
+          maxWidth: 900,
+          padding: "clamp(24px, 5vw, 40px) clamp(12px, 4vw, 24px) 80px",
+        }}
       >
         {/* Page title */}
         <div style={{ marginBottom: 24 }}>
@@ -36,7 +38,7 @@ export default function SettingsPage() {
 
         <SectionCard
           title="Application Settings"
-          description="Backend, model, memory, and theme preferences."
+          description="Backend, model, and memory preferences."
           bodyClassName="flex flex-col gap-0"
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -47,8 +49,6 @@ export default function SettingsPage() {
             <TemperatureSlider />
             <div style={{ height: 1, background: "rgba(255,255,255,0.05)" }} />
             <MemoryToggle />
-            <div style={{ height: 1, background: "rgba(255,255,255,0.05)" }} />
-            <ThemeSelector />
             <div style={{ display: "flex", justifyContent: "flex-end", paddingTop: 4 }}>
               <SaveSettingsButton />
             </div>

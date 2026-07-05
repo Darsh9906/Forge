@@ -48,7 +48,7 @@ export default function MessageBubble({
     >
       {/* ── Assistant: avatar + text ── */}
       {!isUser && (
-        <div className="flex items-start" style={{ gap: 12, maxWidth: 720 }}>
+        <div className="flex items-start w-full" style={{ gap: 12, maxWidth: "100%" }}>
           {/* Avatar */}
           <div
             className="flex items-center justify-center shrink-0"
@@ -68,7 +68,7 @@ export default function MessageBubble({
           </div>
 
           {/* Message body */}
-          <div className="flex flex-col" style={{ gap: 6, flex: 1 }}>
+          <div className="flex flex-col overflow-hidden" style={{ gap: 6, flex: 1 }}>
             <span
               style={{
                 fontSize: 11,
@@ -80,10 +80,10 @@ export default function MessageBubble({
             >
               Forge
             </span>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
               {parts.map((part, i) =>
                 part.type === "code" ? (
-                  <div key={i} className="forge-code" style={{ position: "relative" }}>
+                  <div key={i} className="forge-code w-full overflow-x-auto" style={{ position: "relative" }}>
                     {part.lang && (
                       <div
                         style={{
@@ -128,7 +128,7 @@ export default function MessageBubble({
       {isUser && (
         <div
           className="flex flex-col"
-          style={{ gap: 4, alignItems: "flex-end", maxWidth: 560 }}
+          style={{ gap: 4, alignItems: "flex-end", maxWidth: "85%" }}
         >
           <span
             style={{
