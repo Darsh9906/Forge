@@ -61,7 +61,11 @@ export const useMemoryStore = create<MemoryStore>((set) => ({
 			const result = (await httpResponse.json()) as ServerResult<FastApiRememberResponse>;
 
 			if (!result.success) {
-				throw new Error(result.error.message);
+				throw new Error(result.error.message || "Failed to save memory");
+			}
+
+			if (!result.data || !result.data.success) {
+				throw new Error(result.data?.message || "Failed to save memory");
 			}
 		} catch (err) {
 			throw err;

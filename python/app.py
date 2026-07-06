@@ -91,6 +91,17 @@ class ChatResponse(BaseModel):
     response: str
 
 
+class RecallRequest(BaseModel):
+    """Payload for POST /recall."""
+    query: str
+
+
+class RecallResponse(BaseModel):
+    """Response for POST /recall."""
+    memories: list[dict]
+
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -260,6 +271,51 @@ async def chat(body: ChatRequest) -> ChatResponse:
             status_code=502,
             detail=f"Gemini API error: {exc}",
         ) from exc
+
+
+@app.post("/recall", response_model=RecallResponse)
+async def recall(body: RecallRequest) -> RecallResponse:
+    """
+    POST /recall
+    ------------
+    Accepts a JSON body {"query": "..."} and returns a list of semantically
+    relevant memories matching the query from Cognee's long-term memory.
+    """
+    if not body.query.strip():
+        raise HTTPException(
+            status_code=422,
+            detail="'query' must be a non-empty string.",
+        )
+
+    try:
+        memories = await cognee.recall(body.query)
+        logger.info("Recalled %d memory item(s) for query.", len(memories) if memories else 0)
+
+        # Format memories into clean dictionary shapes matching RecallResponse.
+        formatted_memories = []
+        if memories:
+            for item in memories:
+                if isinstance(item, dict):
+                    formatted_memories.append(item)
+                elif hasattr(item, "text"):
+                    formatted_memories.append({"text": str(item.text)})
+                elif isinstance(item, str):
+                    formatted_memories.append({"text": item})
+                else:
+                    try:
+                        formatted_memories.append(dict(item))
+                    except (ValueError, TypeError):
+                        formatted_memories.append({"text": str(item)})
+
+        return RecallResponse(memories=formatted_memories)
+
+    except Exception as exc:
+        logger.exception("cognee.recall() failed: %s", exc)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to recall memories: {exc}",
+        ) from exc
+
 
 
 # ---------------------------------------------------------------------------

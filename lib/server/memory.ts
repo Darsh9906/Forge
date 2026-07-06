@@ -73,6 +73,7 @@ export async function rememberMemory(
 			};
 		}
 
+		// ── 4. Parse success ──────────────────────────────────────────────────
 		// FastAPI /remember returns { "success": bool, "message": str }
 		const data = (await httpResponse.json()) as FastApiRememberResponse;
 
@@ -117,29 +118,97 @@ export async function rememberMemory(
 // ---------------------------------------------------------------------------
 
 /**
- * POST /recall → (stub — FastAPI has no standalone recall endpoint yet)
+ * POST /recall → FastAPI
  *
- * Request flow intent:
+ * Request flow:
  *   Browser → fetch("/api/memory/recall") → app/api/memory/recall/route.ts
- *           → recallMemory() → FastAPI POST /recall  ← NOT YET IMPLEMENTED
+ *           → recallMemory() → FastAPI POST /recall
  *
- * Current behaviour:
- *   FastAPI's cognee.recall() is called internally inside POST /chat and
- *   injects relevant memories into the Gemini prompt automatically. There is
- *   no separate /recall endpoint exposed by the Python server.
+ * Calls cognee.recall(query) on the FastAPI backend and returns the matching
+ * memory records.
  *
- *   This function therefore returns an empty memory list. The Memory page's
- *   search feature will show no results until a real /recall endpoint is
- *   added to FastAPI and this stub is replaced.
- *
- * TODO: Add POST /recall to python/app.py, then replace this stub with a
- *       real fetch call to `${env.PYTHON_API_URL}/recall`.
+ * Error mapping
+ * ~~~~~~~~~~~~~
+ * • Empty query         → Returns empty list immediately (bypasses network)
+ * • FastAPI 4xx/5xx     → HTTP_<status> with FastAPI's detail message
+ * • Connection refused  → BACKEND_UNAVAILABLE
+ * • Timeout (30 s)      → TIMEOUT_ERROR
+ * • Anything else       → INTERNAL_ERROR
  */
 export async function recallMemory(
-	_query: string,
+	query: string,
 ): Promise<ServerResult<MemoryApiResponse>> {
-	// Stub: return empty list until FastAPI exposes a /recall endpoint.
-	return createServerSuccess<MemoryApiResponse>({
-		memories: [],
-	});
+	// ── 1. Empty query optimization ──────────────────────────────────────────
+	if (!query || query.trim().length === 0) {
+		return createServerSuccess<MemoryApiResponse>({
+			memories: [],
+		});
+	}
+
+	// ── 2. Call FastAPI /recall ───────────────────────────────────────────────
+	const url = `${env.PYTHON_API_URL}/recall`;
+
+	try {
+		const httpResponse = await fetch(url, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ query: query.trim() }),
+			signal: AbortSignal.timeout(30_000),
+		});
+
+		// ── 3. Handle non-2xx responses ───────────────────────────────────────
+		if (!httpResponse.ok) {
+			let detail = `FastAPI returned HTTP ${httpResponse.status}.`;
+			try {
+				const errBody = (await httpResponse.json()) as { detail?: string };
+				if (typeof errBody.detail === "string" && errBody.detail.trim()) {
+					detail = errBody.detail;
+				}
+			} catch {
+				// Body was not JSON; keep default message.
+			}
+			return {
+				success: false,
+				error: { code: `HTTP_${httpResponse.status}`, message: detail },
+			};
+		}
+
+		// ── 4. Parse success ──────────────────────────────────────────────────
+		// FastAPI /recall returns { "memories": [...] }
+		const data = (await httpResponse.json()) as MemoryApiResponse;
+
+		return createServerSuccess(data);
+	} catch (err: unknown) {
+		// ── 5. Network / timeout errors ───────────────────────────────────────
+		if (err instanceof DOMException && err.name === "TimeoutError") {
+			return {
+				success: false,
+				error: {
+					code: "TIMEOUT_ERROR",
+					message: "The request to the recall backend timed out.",
+				},
+			};
+		}
+
+		if (err instanceof TypeError) {
+			return {
+				success: false,
+				error: {
+					code: "BACKEND_UNAVAILABLE",
+					message:
+						"Could not reach the recall backend. Make sure the FastAPI server is running on " +
+						env.PYTHON_API_URL,
+				},
+			};
+		}
+
+		const message =
+			err instanceof Error
+				? err.message
+				: "An unexpected error occurred while recalling memory.";
+		return {
+			success: false,
+			error: { code: "INTERNAL_ERROR", message },
+		};
+	}
 }
