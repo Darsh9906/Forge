@@ -1,27 +1,13 @@
-import type { MemoryApiResponse } from "@/types/memory";
+import type {
+	FastApiRememberResponse,
+	MemoryApiResponse,
+} from "@/types/memory";
 
+import { env } from "@/lib/env";
 import {
 	createServerSuccess,
 	type ServerResult,
 } from "./models";
-
-// ---------------------------------------------------------------------------
-// Helper
-// ---------------------------------------------------------------------------
-
-/**
- * Resolve the FastAPI backend base URL.
- *
- * Reads PYTHON_API_URL (server-only, never sent to the browser) and falls
- * back to localhost:8000 for local development.
- * Mirrors the same helper used in lib/server/chat.ts so the two modules
- * always point to the same backend without duplicating the value.
- */
-function getPythonApiUrl(): string {
-	return (
-		(process.env.PYTHON_API_URL ?? "").trim() || "http://localhost:8000"
-	);
-}
 
 // ---------------------------------------------------------------------------
 // rememberMemory
@@ -30,9 +16,12 @@ function getPythonApiUrl(): string {
 /**
  * POST /remember → FastAPI
  *
- * Sends the text to Cognee via the FastAPI /remember endpoint and returns the
- * existing ServerResult<{ success: boolean; message: string }> shape so the
- * route handler and the Zustand store require zero changes.
+ * Request flow:
+ *   Browser → fetch("/api/memory/remember") → app/api/memory/remember/route.ts
+ *           → rememberMemory() → FastAPI POST /remember
+ *
+ * The FastAPI URL is read exclusively from env.PYTHON_API_URL (server-side,
+ * never bundled into the browser).
  *
  * Error mapping
  * ~~~~~~~~~~~~~
@@ -43,27 +32,27 @@ function getPythonApiUrl(): string {
  * • Anything else       → INTERNAL_ERROR
  */
 export async function rememberMemory(
-	text: string,
-): Promise<ServerResult<{ success: boolean; message: string }>> {
+	message: string,
+): Promise<ServerResult<FastApiRememberResponse>> {
 	// ── 1. Validate ──────────────────────────────────────────────────────────
-	if (!text || text.trim().length === 0) {
+	if (!message || message.trim().length === 0) {
 		return {
 			success: false,
 			error: {
 				code: "INVALID_REQUEST",
-				message: "Memory text is required and cannot be empty.",
+				message: "Memory message is required and cannot be empty.",
 			},
 		};
 	}
 
 	// ── 2. Call FastAPI /remember ─────────────────────────────────────────────
-	const url = `${getPythonApiUrl()}/remember`;
+	const url = `${env.PYTHON_API_URL}/remember`;
 
 	try {
 		const httpResponse = await fetch(url, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ text }),
+			body: JSON.stringify({ message }),
 			signal: AbortSignal.timeout(30_000),
 		});
 
@@ -84,14 +73,10 @@ export async function rememberMemory(
 			};
 		}
 
-		// ── 4. Parse success ──────────────────────────────────────────────────
-		// FastAPI /remember returns { "success": true }
-		const data = (await httpResponse.json()) as { success?: boolean };
+		// FastAPI /remember returns { "success": bool, "message": str }
+		const data = (await httpResponse.json()) as FastApiRememberResponse;
 
-		return createServerSuccess({
-			success: data.success === true,
-			message: "Memory saved successfully",
-		});
+		return createServerSuccess(data);
 	} catch (err: unknown) {
 		// ── 5. Network / timeout errors ───────────────────────────────────────
 		if (err instanceof DOMException && err.name === "TimeoutError") {
@@ -111,7 +96,7 @@ export async function rememberMemory(
 					code: "BACKEND_UNAVAILABLE",
 					message:
 						"Could not reach the memory backend. Make sure the FastAPI server is running on " +
-						getPythonApiUrl(),
+						env.PYTHON_API_URL,
 				},
 			};
 		}
@@ -132,35 +117,29 @@ export async function rememberMemory(
 // ---------------------------------------------------------------------------
 
 /**
- * Recall is handled implicitly by the FastAPI /chat endpoint.
+ * POST /recall → (stub — FastAPI has no standalone recall endpoint yet)
  *
- * When the user sends a message, the FastAPI backend calls cognee.recall()
- * internally and injects the results into the Gemini prompt. There is no
- * standalone /recall endpoint to call from the Next.js layer.
+ * Request flow intent:
+ *   Browser → fetch("/api/memory/recall") → app/api/memory/recall/route.ts
+ *           → recallMemory() → FastAPI POST /recall  ← NOT YET IMPLEMENTED
  *
- * This function therefore returns an empty MemoryApiResponse. The Zustand
- * store's normalizeMemories() already handles this gracefully (produces []),
- * so the UI sees an empty memory list without error — which is the correct
- * UX when recall is managed server-side by the Python process.
+ * Current behaviour:
+ *   FastAPI's cognee.recall() is called internally inside POST /chat and
+ *   injects relevant memories into the Gemini prompt automatically. There is
+ *   no separate /recall endpoint exposed by the Python server.
  *
- * The function signature and return type are unchanged so the route handler
- * (app/api/memory/recall/route.ts) and the store require zero modification.
+ *   This function therefore returns an empty memory list. The Memory page's
+ *   search feature will show no results until a real /recall endpoint is
+ *   added to FastAPI and this stub is replaced.
+ *
+ * TODO: Add POST /recall to python/app.py, then replace this stub with a
+ *       real fetch call to `${env.PYTHON_API_URL}/recall`.
  */
 export async function recallMemory(
-	query: string,
+	_query: string,
 ): Promise<ServerResult<MemoryApiResponse>> {
-	if (!query || query.trim().length === 0) {
-		return createServerSuccess<MemoryApiResponse>({
-			memories: [],
-		});
-	}
-
-	// Return an empty response — recall is handled inside the FastAPI /chat
-	// endpoint via cognee.recall() and does not need a separate round-trip
-	// from the Next.js server layer.
+	// Stub: return empty list until FastAPI exposes a /recall endpoint.
 	return createServerSuccess<MemoryApiResponse>({
 		memories: [],
 	});
 }
-
-

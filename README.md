@@ -274,19 +274,38 @@ pip install -r requirements.txt
 
 ## Configure Environment
 
-Create a `.env` file.
+Forge AI uses **two** environment files.  All variables are **server-side only** — none carry the `NEXT_PUBLIC_` prefix, so the browser never sees a URL or API key.
+
+### `.env` — shared defaults (committed, no secrets)
 
 ```env
-GEMINI_API_KEY=YOUR_API_KEY
+# FastAPI backend — Next.js server proxies all AI calls here.
+# Browser code never reads this value.
+PYTHON_API_URL=http://localhost:8000
 
-LLM_PROVIDER=gemini
+# Google Gemini API key (used by both Next.js startup validation and Python)
+GEMINI_API_KEY=
 
-LLM_MODEL=gemini/gemini-2.5-flash
-
-EMBEDDING_MODEL=gemini/gemini-embedding-001
-
-COGNEE_DATABASE=.data
+# Gemini model identifier
+GEMINI_MODEL=gemini-2.0-flash
 ```
+
+### `.env.local` — local overrides (gitignored, contains real secrets)
+
+```env
+# Override PYTHON_API_URL to point to your deployed FastAPI instance
+PYTHON_API_URL=https://your-backend.onrender.com
+
+GEMINI_API_KEY=YOUR_REAL_API_KEY
+
+GEMINI_MODEL=gemini-2.0-flash-lite
+```
+
+| Variable | Read by | Exposed to browser? |
+|---|---|---|
+| `PYTHON_API_URL` | `lib/env.ts` → `lib/server/chat.ts` + `lib/server/memory.ts` | ❌ Never |
+| `GEMINI_API_KEY` | `lib/env.ts` (startup check) + `python/app.py` | ❌ Never |
+| `GEMINI_MODEL` | `lib/env.ts` (startup check) + `python/app.py` | ❌ Never |
 
 ---
 

@@ -1,3 +1,4 @@
+import ChatHeader from "@/components/chat/ChatHeader";
 import ChatMessages from "@/components/chat/ChatMessage";
 import ChatInput from "@/components/chat/ChatInput";
 
@@ -7,6 +8,9 @@ export default function ChatPage() {
       className="flex h-full flex-col w-full overflow-hidden"
       style={{ background: "#0a0a0a" }}
     >
+      {/* Header — message count + clear */}
+      <ChatHeader />
+
       {/* Messages — fills all available space */}
       <div className="flex-1 min-h-0 overflow-hidden w-full">
         <ChatMessages />

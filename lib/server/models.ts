@@ -1,7 +1,3 @@
-import { isAxiosError } from "axios";
-
-import type { ApiErrorResponse } from "@/types/api";
-
 export type ServerSuccess<T> = {
 	success: true;
 	data: T;
@@ -26,28 +22,6 @@ export function createServerError(
 	fallbackCode: string,
 	fallbackMessage: string,
 ): ServerError {
-	if (isAxiosError(error)) {
-		const responseError = error.response?.data as ApiErrorResponse | undefined;
-		const code =
-			typeof (responseError as { code?: unknown } | undefined)?.code === "string"
-				? ((responseError as { code: string }).code)
-				: error.response?.status
-					? `HTTP_${error.response.status}`
-					: fallbackCode;
-		const message =
-			typeof responseError?.message === "string" && responseError.message.trim().length > 0
-				? responseError.message
-				: fallbackMessage;
-
-		return {
-			success: false,
-			error: {
-				code,
-				message,
-			},
-		};
-	}
-
 	if (error instanceof Error) {
 		return {
 			success: false,

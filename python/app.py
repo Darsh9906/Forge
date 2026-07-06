@@ -72,12 +72,13 @@ app = FastAPI(title="Forge AI", version="1.0.0", lifespan=lifespan)
 
 class RememberRequest(BaseModel):
     """Payload for POST /remember."""
-    text: str
+    message: str
 
 
 class RememberResponse(BaseModel):
     """Response for POST /remember."""
     success: bool
+    message: str
 
 
 class ChatRequest(BaseModel):
@@ -145,28 +146,28 @@ async def remember(body: RememberRequest) -> RememberResponse:
     """
     POST /remember
     --------------
-    Accepts a JSON body {"text": "..."} and stores the text inside
+    Accepts a JSON body {"message": "..."} and stores the text inside
     Cognee's long-term memory graph.
 
     Steps
     ~~~~~
-    1. Validate that 'text' is non-empty.
+    1. Validate that 'message' is non-empty.
     2. Call cognee.remember() -- this ingests the text, runs entity
        extraction and knowledge-graph construction, and persists everything
        to the local Cognee store.
     3. Return {"success": true} on success or raise an HTTP 500 on
        any unexpected error.
     """
-    if not body.text.strip():
+    if not body.message.strip():
         raise HTTPException(
             status_code=422,
-            detail="'text' must be a non-empty string.",
+            detail="'message' must be a non-empty string.",
         )
 
     try:
-        await cognee.remember(body.text)
-        logger.info("Stored %d chars in Cognee memory.", len(body.text))
-        return RememberResponse(success=True)
+        await cognee.remember(body.message)
+        logger.info("Stored %d chars in Cognee memory.", len(body.message))
+        return RememberResponse(success=True, message="Memory saved successfully")
 
     except Exception as exc:
         logger.exception("cognee.remember() failed: %s", exc)

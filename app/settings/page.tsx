@@ -1,4 +1,3 @@
-import BackendUrlInput from "@/components/settings/BackendUrlCard";
 import MemoryToggle from "@/components/settings/MemoryToggle";
 import ModelSelector from "@/components/settings/ModelSelector";
 import SaveSettingsButton from "@/components/settings/SaveSettingsButton";
@@ -38,12 +37,10 @@ export default function SettingsPage() {
 
         <SectionCard
           title="Application Settings"
-          description="Backend, model, and memory preferences."
+          description="Model, temperature, and memory preferences."
           bodyClassName="flex flex-col gap-0"
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            <BackendUrlInput />
-            <div style={{ height: 1, background: "rgba(255,255,255,0.05)" }} />
             <ModelSelector />
             <div style={{ height: 1, background: "rgba(255,255,255,0.05)" }} />
             <TemperatureSlider />

@@ -1,11 +1,11 @@
 import { create } from "zustand";
 
-import { sendMessage as sendChatMessage } from "@/services/chat/chat-service";
 import type {
 	ChatMessage,
 	SendMessageRequest,
 	SendMessageResponse,
 } from "@/types/chat";
+import type { ServerResult } from "@/lib/server/models";
 
 type ChatStore = {
 	messages: ChatMessage[];
@@ -25,18 +25,6 @@ const getAssistantMessage = (
 	if (typeof response.content === "string" && response.content.length > 0) {
 		return { role: "assistant", content: response.content };
 	}
-
-	if (typeof response.message?.content === "string") {
-		return { role: "assistant", content: response.message.content };
-	}
-
-	const firstChoice = response.choices?.[0];
-	const choiceContent = firstChoice?.message?.content ?? firstChoice?.delta?.content;
-
-	if (typeof choiceContent === "string" && choiceContent.length > 0) {
-		return { role: "assistant", content: choiceContent };
-	}
-
 	return null;
 };
 
@@ -72,9 +60,24 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 				use_memory: options?.use_memory,
 			};
 
-			const response = await sendChatMessage(request);
-			const assistantMessage = getAssistantMessage(response);
+			const httpResponse = await fetch("/api/chat", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(request),
+				signal: AbortSignal.timeout(30_000),
+			});
 
+			if (!httpResponse.ok) {
+				throw new Error(`Request failed with status ${httpResponse.status}`);
+			}
+
+			const result = (await httpResponse.json()) as ServerResult<SendMessageResponse>;
+
+			if (!result.success) {
+				throw new Error(result.error.message);
+			}
+
+			const assistantMessage = getAssistantMessage(result.data);
 			if (assistantMessage) {
 				set((state) => ({ messages: [...state.messages, assistantMessage] }));
 			}

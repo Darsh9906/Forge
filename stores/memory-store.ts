@@ -1,11 +1,12 @@
 import { create } from "zustand";
 
-import { remember as rememberMemory, recall as recallMemory } from "@/services/memory/memory-service";
 import type {
+	FastApiRememberResponse,
 	MemoryApiResponse,
 	MemoryRecord,
 	MemoryServiceResponse,
 } from "@/types/memory";
+import type { ServerResult } from "@/lib/server/models";
 
 type MemoryStore = {
 	memories: MemoryRecord[];
@@ -18,42 +19,25 @@ type MemoryStore = {
 const isMemoryRecord = (value: unknown): value is MemoryRecord =>
 	typeof value === "object" && value !== null;
 
+/**
+ * Normalise the recall response into a flat MemoryRecord[].
+ * Handles the stub (empty array) and any future real response shapes.
+ */
 const normalizeMemories = (response: MemoryServiceResponse): MemoryRecord[] => {
+	// Array of records — most common future case
 	if (Array.isArray(response)) {
 		return response.filter(isMemoryRecord);
 	}
 
-	if (!isMemoryRecord(response)) {
-		return [];
+	// Wrapped response  { memories: [...] }  — matches MemoryApiResponse
+	if (isMemoryRecord(response)) {
+		const typedResponse = response as unknown as MemoryApiResponse;
+		if (Array.isArray(typedResponse.memories)) {
+			return typedResponse.memories.filter(isMemoryRecord);
+		}
 	}
 
-	const typedResponse = response as MemoryApiResponse;
-
-	if (Array.isArray(typedResponse.memories)) {
-		return typedResponse.memories.filter(isMemoryRecord);
-	}
-
-	if (Array.isArray(typedResponse.data)) {
-		return typedResponse.data.filter(isMemoryRecord);
-	}
-
-	if (Array.isArray(typedResponse.result)) {
-		return typedResponse.result.filter(isMemoryRecord);
-	}
-
-	if (isMemoryRecord(typedResponse.memory)) {
-		return [typedResponse.memory];
-	}
-
-	if (isMemoryRecord(typedResponse.data)) {
-		return [typedResponse.data];
-	}
-
-	if (isMemoryRecord(typedResponse.result)) {
-		return [typedResponse.result];
-	}
-
-	return [typedResponse];
+	return [];
 };
 
 export const useMemoryStore = create<MemoryStore>((set) => ({
@@ -63,11 +47,21 @@ export const useMemoryStore = create<MemoryStore>((set) => ({
 		set({ loading: true });
 
 		try {
-			const response = await rememberMemory(text);
-			const nextMemories = normalizeMemories(response);
+			const httpResponse = await fetch("/api/memory/remember", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ message: text }),
+				signal: AbortSignal.timeout(30_000),
+			});
 
-			if (nextMemories.length > 0) {
-				set((state) => ({ memories: [...state.memories, ...nextMemories] }));
+			if (!httpResponse.ok) {
+				throw new Error(`Request failed with status ${httpResponse.status}`);
+			}
+
+			const result = (await httpResponse.json()) as ServerResult<FastApiRememberResponse>;
+
+			if (!result.success) {
+				throw new Error(result.error.message);
 			}
 		} catch (err) {
 			throw err;
@@ -79,9 +73,24 @@ export const useMemoryStore = create<MemoryStore>((set) => ({
 		set({ loading: true });
 
 		try {
-			const response = await recallMemory(query);
-			const nextMemories = normalizeMemories(response);
+			const httpResponse = await fetch("/api/memory/recall", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ query }),
+				signal: AbortSignal.timeout(30_000),
+			});
 
+			if (!httpResponse.ok) {
+				throw new Error(`Request failed with status ${httpResponse.status}`);
+			}
+
+			const result = (await httpResponse.json()) as ServerResult<MemoryServiceResponse>;
+
+			if (!result.success) {
+				throw new Error(result.error.message);
+			}
+
+			const nextMemories = normalizeMemories(result.data);
 			set({ memories: nextMemories });
 		} catch (err) {
 			throw err;

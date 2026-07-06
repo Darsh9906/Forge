@@ -1,5 +1,12 @@
-import type { SendMessageRequest, SendMessageResponse } from "@/types/chat";
+import type {
+	ChatMessage,
+	ChatRouteRequest,
+	FastApiChatRequest,
+	FastApiChatResponse,
+	SendMessageResponse,
+} from "@/types/chat";
 
+import { env } from "@/lib/env";
 import {
 	createServerSuccess,
 	type ServerResult,
@@ -10,44 +17,37 @@ import {
 // ---------------------------------------------------------------------------
 
 /**
- * Resolve the FastAPI backend base URL.
- *
- * Priority order:
- *   1. PYTHON_API_URL  – explicit server-side env var (never exposed to browser)
- *   2. Hard-coded fallback for local development
- *
- * Using a server-side-only variable (no NEXT_PUBLIC_ prefix) guarantees the
- * URL is never shipped in the client bundle.
- */
-function getPythonApiUrl(): string {
-	return (
-		(process.env.PYTHON_API_URL ?? "").trim() || "http://localhost:8000"
-	);
-}
-
-/**
  * Extract the latest user message from the messages array.
  *
- * The FastAPI /chat endpoint expects a single `message` string. We send the
- * most recent non-empty user turn so that Cognee recall is scoped to what
- * the user just asked, while the full conversation history is already stored
- * in Cognee memory via the /remember endpoint.
+ * FastAPI /chat expects a single `message` string. We send the most recent
+ * non-empty user turn so that Cognee recall is scoped to what the user just
+ * asked, while the full conversation history is already captured in Cognee
+ * memory via the /remember endpoint.
  */
 function extractLatestUserMessage(
-	request: SendMessageRequest,
+	request: ChatRouteRequest,
 ): string | null {
 	const userMessages = request.messages.filter(
-		(m) => m.role === "user" && typeof m.content === "string" && m.content.trim() !== "",
+		(m: ChatMessage) => m.role === "user" && typeof m.content === "string" && m.content.trim() !== "",
 	);
 	return userMessages.at(-1)?.content ?? null;
 }
 
 // ---------------------------------------------------------------------------
-// Main function
+// Main export
 // ---------------------------------------------------------------------------
 
+/**
+ * Send a chat message through the Next.js server to FastAPI.
+ *
+ * Request flow:
+ *   Browser → fetch("/api/chat") → app/api/chat/route.ts → sendChat() → FastAPI
+ *
+ * The FastAPI URL is read exclusively from env.PYTHON_API_URL (server-side,
+ * never bundled into the browser).
+ */
 export async function sendChat(
-	request: SendMessageRequest,
+	request: ChatRouteRequest,
 ): Promise<ServerResult<SendMessageResponse>> {
 	// ── 1. Validate request ─────────────────────────────────────────────────
 	if (!request.messages || !Array.isArray(request.messages)) {
@@ -73,15 +73,14 @@ export async function sendChat(
 	}
 
 	// ── 3. Call the FastAPI /chat endpoint ───────────────────────────────────
-	const baseUrl = getPythonApiUrl();
-	const url = `${baseUrl}/chat`;
+	const url = `${env.PYTHON_API_URL}/chat`;
 
 	try {
+		const body: FastApiChatRequest = { message: latestMessage };
 		const httpResponse = await fetch(url, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ message: latestMessage }),
-			// Abort the request if the FastAPI server does not respond in time.
+			body: JSON.stringify(body),
 			signal: AbortSignal.timeout(30_000),
 		});
 
@@ -109,18 +108,12 @@ export async function sendChat(
 			};
 		}
 
-		// ── 5. Parse the FastAPI success response ────────────────────────────
-		// FastAPI /chat returns { "response": "..." }
-		const data = (await httpResponse.json()) as { response?: string };
-
-		const content =
-			typeof data.response === "string" ? data.response : "";
+		// FastAPI /chat returns { "response": "..." }  (FastApiChatResponse)
+		const data = (await httpResponse.json()) as FastApiChatResponse;
 
 		const response: SendMessageResponse = {
 			// Map FastAPI's `response` field → SendMessageResponse's `content`
-			// field. The store reads `response.content` first, so this is the
-			// correct target property.
-			content,
+			content: typeof data.response === "string" ? data.response : "",
 		};
 
 		return createServerSuccess(response);
@@ -145,7 +138,7 @@ export async function sendChat(
 					code: "BACKEND_UNAVAILABLE",
 					message:
 						"Could not reach the AI backend. Make sure the FastAPI server is running on " +
-						getPythonApiUrl(),
+						env.PYTHON_API_URL,
 				},
 			};
 		}
