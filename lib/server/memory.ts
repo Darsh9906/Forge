@@ -150,13 +150,9 @@ export async function recallMemory(
 	query: string,
 ): Promise<ServerResult<MemoryApiResponse>> {
 	if (!query || query.trim().length === 0) {
-		return {
-			success: false,
-			error: {
-				code: "INVALID_REQUEST",
-				message: "Search query is required and cannot be empty.",
-			},
-		};
+		return createServerSuccess<MemoryApiResponse>({
+			memories: [],
+		});
 	}
 
 	// Return an empty response — recall is handled inside the FastAPI /chat
