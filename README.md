@@ -443,7 +443,7 @@ MIT License
 
 **Darsh**
 
-AI Engineer • Backend Developer • Building intelligent AI systems with semantic memory.
+Frontend Dev
 
 GitHub: https://github.com/Darsh9906
 
